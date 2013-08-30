@@ -28,13 +28,14 @@ InverterLayer *inverter_layer;
 Layer *colon_layer;
 PropertyAnimation colon_animation_in;
 
-typedef struct {
-	int x;
-	int y;
-	int w;
-	int h;
-} DigitComponent;
+//typedef struct {
+//	int x;
+//	int y;
+//	int w;
+//	int h;
+//} DigitComponent;
 
+/*
 DigitComponent digit_components[10][LAYERS] = {
 																								{	//0
 																									{	4,	0,	22,	8},
@@ -197,6 +198,7 @@ DigitComponent digit_components[10][LAYERS] = {
 																									{	0,	4,	8,	15}
 																								}
 																							};
+*/
 
 typedef struct {
 	int x;
@@ -206,7 +208,7 @@ typedef struct {
 	PropertyAnimation animations_in[LAYERS];
 } TimeDigit;
 
-TimeDigit time_digits[TIME_DIGITS];
+//TimeDigit time_digits[TIME_DIGITS];
 
 long random_seed;
 
@@ -239,49 +241,49 @@ int random(int max)
 
 
 void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
-	GRect random_rect;
-	GRect home_rect;
-	int layer;
-		
-	for(layer = 0; layer < LAYERS; layer++) {
-		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
-		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
-		
-		property_animation_init_layer_frame(&time_digit->animations_out[layer], (Layer *)&time_digit->digit_layers[layer], NULL, &random_rect);
-		animation_set_curve(&time_digit->animations_out[layer].animation, AnimationCurveEaseOut);
-		animation_set_delay(&time_digit->animations_out[layer].animation, 0 + delay);
-		animation_set_duration(&time_digit->animations_out[layer].animation, ANIMATION_DURATION);
-		animation_schedule(&time_digit->animations_out[layer].animation);	
-		
-		property_animation_init_layer_frame(&time_digit->animations_in[layer], (Layer *)&time_digit->digit_layers[layer], &random_rect, &home_rect);
-		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
-		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
-		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
-		animation_schedule(&time_digit->animations_in[layer].animation);	
-	}
+//	GRect random_rect;
+//	GRect home_rect;
+//	int layer;
+//		
+//	for(layer = 0; layer < LAYERS; layer++) {
+//		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
+//		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
+//		
+//		property_animation_init_layer_frame(&time_digit->animations_out[layer], (Layer *)&time_digit->digit_layers[layer], NULL, &random_rect);
+//		animation_set_curve(&time_digit->animations_out[layer].animation, AnimationCurveEaseOut);
+//		animation_set_delay(&time_digit->animations_out[layer].animation, 0 + delay);
+//		animation_set_duration(&time_digit->animations_out[layer].animation, ANIMATION_DURATION);
+//		animation_schedule(&time_digit->animations_out[layer].animation);	
+//		
+//		property_animation_init_layer_frame(&time_digit->animations_in[layer], (Layer *)&time_digit->digit_layers[layer], &random_rect, &home_rect);
+//		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
+//		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
+//		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
+//		animation_schedule(&time_digit->animations_in[layer].animation);	
+//	}
 }
 
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-	if (units_changed & HOUR_UNIT) {
-		if(tick_time->tm_hour % 10 == 0) { trigger_animation(&time_digits[0], (tick_time->tm_hour) / 10, 0); }
-		trigger_animation(&time_digits[1], (tick_time->tm_hour) % 10, 0);
-	}
-
-	if (units_changed & MINUTE_UNIT) {
-		if(tick_time->tm_min % 10 == 0) { trigger_animation(&time_digits[2], (tick_time->tm_min) / 10, 0); }
-		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
-	}
+//	if (units_changed & HOUR_UNIT) {
+//		if(tick_time->tm_hour % 10 == 0) { trigger_animation(&time_digits[0], (tick_time->tm_hour) / 10, 0); }
+//		trigger_animation(&time_digits[1], (tick_time->tm_hour) % 10, 0);
+//	}
+//
+//	if (units_changed & MINUTE_UNIT) {
+//		if(tick_time->tm_min % 10 == 0) { trigger_animation(&time_digits[2], (tick_time->tm_min) / 10, 0); }
+//		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
+//	}
 
 }
 
 
 void handle_init(void) {
-	int layer;
-	int digit;
+//	int layer;
+//	int digit;
 	
-	time_t now;
-	struct tm *tick_time;
+//	time_t now;
+//	struct tm *tick_time;
 	
 	GRect to_rect;
 	
@@ -291,26 +293,22 @@ void handle_init(void) {
   window_stack_push(window, true /* Animated */);
   window_set_background_color(window, GColorBlack);
 	
-	time_digits[0].x = 3; time_digits[0].y = 65;
-	time_digits[1].x = 38; time_digits[1].y = 65;
-	time_digits[2].x = 76; time_digits[2].y = 65;
-	time_digits[3].x = 111; time_digits[3].y = 65;
+//	time_digits[0].x = 3; time_digits[0].y = 65;
+//	time_digits[1].x = 38; time_digits[1].y = 65;
+//	time_digits[2].x = 76; time_digits[2].y = 65;
+//	time_digits[3].x = 111; time_digits[3].y = 65;
 	
 	colon_layer = layer_create(GRect(72, 84, 0, 0));
 	layer_set_update_proc(colon_layer, colon_layer_update_callback);
 	layer_add_child(window_get_root_layer(window), colon_layer);
 
-	for(digit = 0; digit < TIME_DIGITS; digit++) {
-		for(layer = 0; layer < LAYERS; layer++) {
-			time_digits[digit].digit_layers[layer] = layer_create(GRect(72, 84, 0, 0));
-			layer_set_update_proc(time_digits[digit].digit_layers[layer], &digit_layer_update_callback);
-			layer_add_child(window_get_root_layer(window), time_digits[digit].digit_layers[layer]);
-			
-	colon_layer = layer_create(GRect(72, 84, 0, 0));
-	layer_set_update_proc(colon_layer, colon_layer_update_callback);
-	layer_add_child(window_get_root_layer(window), colon_layer);
-		}
-	}
+//	for(digit = 0; digit < TIME_DIGITS; digit++) {
+//		for(layer = 0; layer < LAYERS; layer++) {
+//			time_digits[digit].digit_layers[layer] = layer_create(GRect(72, 84, 0, 0));
+//			layer_set_update_proc(time_digits[digit].digit_layers[layer], &digit_layer_update_callback);
+//			layer_add_child(window_get_root_layer(window), time_digits[digit].digit_layers[layer]);			
+//		}
+//	}
 	
 	#if INVERTED
 	// The inverter layer (probably) has to be the last layer added to the window
@@ -319,13 +317,13 @@ void handle_init(void) {
 	#endif
 
 	//force initial render
-  now = time(NULL);
-  tick_time = localtime(&now);
+//  now = time(NULL);
+//  tick_time = localtime(&now);
 
-	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
-	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
-	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
-	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
+//	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
+//	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
+//	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
+//	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
 	
 	to_rect = GRect(70, 75, 4, 18);
 	property_animation_init_layer_frame(&colon_animation_in, colon_layer, NULL, &to_rect);
