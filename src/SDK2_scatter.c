@@ -241,12 +241,12 @@ int random(int max)
 
 void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 	GRect random_rect;
-//	GRect home_rect;
+	GRect home_rect;
 	int layer;
 		
 	for(layer = 0; layer < LAYERS; layer++) {
 		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
-//		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
+		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
 		
 		property_animation_init_layer_frame(&time_digit->animations_out[layer], time_digit->digit_layers[layer], NULL, &random_rect);
 		animation_set_curve(&time_digit->animations_out[layer].animation, AnimationCurveEaseOut);
@@ -254,11 +254,11 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 		animation_set_duration(&time_digit->animations_out[layer].animation, ANIMATION_DURATION);
 		animation_schedule(&time_digit->animations_out[layer].animation);	
 		
-//		property_animation_init_layer_frame(&time_digit->animations_in[layer], time_digit->digit_layers[layer], &random_rect, &home_rect);
-//		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
-//		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
-//		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
-//		animation_schedule(&time_digit->animations_in[layer].animation);	
+		property_animation_init_layer_frame(&time_digit->animations_in[layer], time_digit->digit_layers[layer], &random_rect, &home_rect);
+		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
+		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
+		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
+		animation_schedule(&time_digit->animations_in[layer].animation);	
 
 /*	Sample of working code from elsewhere
 	to_rect = GRect(70, 75, 4, 18);
@@ -283,13 +283,13 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 //		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
 //	}
 
-/*	// test code - not for keeps!
+	// test code - not for keeps!
 	if (units_changed & SECOND_UNIT) {
 		if (tick_time->tm_sec % 3 == 0) {
 			trigger_animation(&time_digits[0], (tick_time->tm_sec) % 3, 0);
 		}
 	}
-*/
+
 
 }
 
