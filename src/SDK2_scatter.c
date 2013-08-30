@@ -26,7 +26,7 @@ InverterLayer *inverter_layer;
 #endif
 
 Layer *colon_layer;
-PropertyAnimation *colon_animation_in;
+PropertyAnimation colon_animation_in;
 
 typedef struct {
 	int x;
@@ -247,13 +247,13 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
 		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
 		
-		property_animation_init_layer_frame((PropertyAnimation *)&time_digit->animations_out[layer], (Layer *)&time_digit->digit_layers[layer], NULL, &random_rect);
+		property_animation_init_layer_frame(&time_digit->animations_out[layer], (Layer *)&time_digit->digit_layers[layer], NULL, &random_rect);
 		animation_set_curve(&time_digit->animations_out[layer].animation, AnimationCurveEaseOut);
 		animation_set_delay(&time_digit->animations_out[layer].animation, 0 + delay);
 		animation_set_duration(&time_digit->animations_out[layer].animation, ANIMATION_DURATION);
 		animation_schedule(&time_digit->animations_out[layer].animation);	
 		
-		property_animation_init_layer_frame((PropertyAnimation *)&time_digit->animations_in[layer], (Layer *)&time_digit->digit_layers[layer], &random_rect, &home_rect);
+		property_animation_init_layer_frame(&time_digit->animations_in[layer], (Layer *)&time_digit->digit_layers[layer], &random_rect, &home_rect);
 		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
 		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
 		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
@@ -302,9 +302,9 @@ void handle_init(void) {
 
 	for(digit = 0; digit < TIME_DIGITS; digit++) {
 		for(layer = 0; layer < LAYERS; layer++) {
-			layer_init(&time_digits[digit].digit_layers[layer], GRect(72, 84, 0, 0));
-			time_digits[digit].digit_layers[layer].update_proc = &digit_layer_update_callback;
-			layer_add_child(&window.layer, &time_digits[digit].digit_layers[layer]);
+			time_digits[digit].digit_layers[layer] = layer_create(GRect(72, 84, 0, 0));
+			layer_set_update_proc(time_digits[digit].digit_layers[layer], &digit_layer_update_callback);
+			layer_add_child(window_get_root_layer(window), time_digits[digit].digit_layers[layer]);
 			
 	colon_layer = layer_create(GRect(72, 84, 0, 0));
 	layer_set_update_proc(colon_layer, colon_layer_update_callback);
@@ -319,38 +319,36 @@ void handle_init(void) {
 	#endif
 
 	//force initial render
-	get_time(&tick_time);
-	trigger_animation(&time_digits[0], (tick_time.tm_hour / 10), 500);
-	trigger_animation(&time_digits[1], (tick_time.tm_hour % 10), 500);
-	trigger_animation(&time_digits[2], (tick_time.tm_min / 10), 500);
-	trigger_animation(&time_digits[3], (tick_time.tm_min % 10), 500);
+  now = time(NULL);
+  tick_time = localtime(&now);
+
+	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
+	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
+	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
+	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
 	
 	to_rect = GRect(70, 75, 4, 18);
-	property_animation_init_layer_frame(&colon_animation_in, &colon_layer, NULL, &to_rect);
+	property_animation_init_layer_frame(&colon_animation_in, colon_layer, NULL, &to_rect);
 	animation_set_curve(&colon_animation_in.animation, AnimationCurveEaseOut);
 	animation_set_delay(&colon_animation_in.animation, ANIMATION_DELAY + 500);
 	animation_set_duration(&colon_animation_in.animation, ANIMATION_DURATION);
 	animation_schedule(&colon_animation_in.animation);	
 	
+	tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
 }
 
 
-void handle_deinit(AppContextRef ctx)
+void handle_deinit(void)
 {
-	(void)ctx;
-
+	tick_timer_service_unsubscribe();
 	animation_unschedule_all();
 }
 
 
-void pbl_main(void *params) {
-  PebbleAppHandlers handlers = {
-    .init_handler = &handle_init,
-		.deinit_handler = &handle_deinit,
-    .tick_info = {
-      .tick_handler = &handle_tick,
-      .tick_units = MINUTE_UNIT
-    }		
-  };
-  app_event_loop(params, &handlers);
+int main(void) {
+  handle_init();
+
+  app_event_loop();
+  
+  handle_deinit();
 }
