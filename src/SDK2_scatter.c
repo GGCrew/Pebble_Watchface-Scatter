@@ -9,8 +9,7 @@
 #define ANIMATION_DURATION 200
 #define ANIMATION_DELAY 400
 #define LAYERS 14
-//#define TIME_DIGITS 4
-#define TIME_DIGITS 1
+#define TIME_DIGITS 4
 
 
 #define MY_UUID { 0x47, 0x47, 0x20, 0x43, 0x72, 0x65, 0x77, 0x26, 0x85, 0xDA, 0x4A, 0x10, 0x05, 0x0E, 0xF0, 0xDD }
@@ -211,9 +210,7 @@ TimeDigit time_digits[TIME_DIGITS];
 
 long random_seed;
 
-
 /**/
-
 
 
 void digit_layer_update_callback(Layer *layer, GContext* ctx) {
@@ -259,38 +256,20 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
 		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
 		animation_schedule(&time_digit->animations_in[layer].animation);	
-
-/*	Sample of working code from elsewhere
-	to_rect = GRect(70, 75, 4, 18);
-	property_animation_init_layer_frame(&colon_animation_in, colon_layer, NULL, &to_rect);
-	animation_set_curve(&colon_animation_in.animation, AnimationCurveEaseOut);
-	animation_set_delay(&colon_animation_in.animation, ANIMATION_DELAY + 500);
-	animation_set_duration(&colon_animation_in.animation, ANIMATION_DURATION);
-	animation_schedule(&colon_animation_in.animation);	
-*/
 	}
 }
 
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-//	if (units_changed & HOUR_UNIT) {
-//		if(tick_time->tm_hour % 10 == 0) { trigger_animation(&time_digits[0], (tick_time->tm_hour) / 10, 0); }
-//		trigger_animation(&time_digits[1], (tick_time->tm_hour) % 10, 0);
-//	}
-//
-//	if (units_changed & MINUTE_UNIT) {
-//		if(tick_time->tm_min % 10 == 0) { trigger_animation(&time_digits[2], (tick_time->tm_min) / 10, 0); }
-//		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
-//	}
-
-	// test code - not for keeps!
-	if (units_changed & SECOND_UNIT) {
-		if (tick_time->tm_sec % 3 == 0) {
-			trigger_animation(&time_digits[0], (tick_time->tm_sec) % 3, 0);
-		}
+	if (units_changed & HOUR_UNIT) {
+		if(tick_time->tm_hour % 10 == 0) { trigger_animation(&time_digits[0], (tick_time->tm_hour) / 10, 0); }
+		trigger_animation(&time_digits[1], (tick_time->tm_hour) % 10, 0);
 	}
 
-
+	if (units_changed & MINUTE_UNIT) {
+		if(tick_time->tm_min % 10 == 0) { trigger_animation(&time_digits[2], (tick_time->tm_min) / 10, 0); }
+		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
+	}
 }
 
 
@@ -298,8 +277,8 @@ void handle_init(void) {
 	int layer;
 	int digit;
 	
-//	time_t now;
-//	struct tm *tick_time;
+	time_t now;
+	struct tm *tick_time;
 	
 	GRect to_rect;
 	
@@ -310,9 +289,9 @@ void handle_init(void) {
   window_set_background_color(window, GColorBlack);
 	
 	time_digits[0].x = 3; time_digits[0].y = 65;
-//	time_digits[1].x = 38; time_digits[1].y = 65;
-//	time_digits[2].x = 76; time_digits[2].y = 65;
-//	time_digits[3].x = 111; time_digits[3].y = 65;
+	time_digits[1].x = 38; time_digits[1].y = 65;
+	time_digits[2].x = 76; time_digits[2].y = 65;
+	time_digits[3].x = 111; time_digits[3].y = 65;
 	
 	colon_layer = layer_create(GRect(72, 84, 0, 0));
 	layer_set_update_proc(colon_layer, colon_layer_update_callback);
@@ -333,13 +312,12 @@ void handle_init(void) {
 	#endif
 
 	//force initial render
-//  now = time(NULL);
-//  tick_time = localtime(&now);
-
-//	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
-//	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
-//	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
-//	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
+  now = time(NULL);
+  tick_time = localtime(&now);
+	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
+	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
+	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
+	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
 	
 	to_rect = GRect(70, 75, 4, 18);
 	property_animation_init_layer_frame(&colon_animation_in, colon_layer, NULL, &to_rect);
@@ -348,8 +326,7 @@ void handle_init(void) {
 	animation_set_duration(&colon_animation_in.animation, ANIMATION_DURATION);
 	animation_schedule(&colon_animation_in.animation);	
 	
-	//tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
-	tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+	tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
 }
 
 
