@@ -273,6 +273,19 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 
+void handle_tap(AccelAxisType axis) {
+	time_t now;
+	struct tm *tick_time;
+
+  now = time(NULL);
+  tick_time = localtime(&now);
+	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
+	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
+	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
+	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
+}
+
+
 void handle_init(void) {
 	int layer;
 	int digit;
@@ -327,12 +340,14 @@ void handle_init(void) {
 	animation_schedule(&colon_animation_in.animation);	
 	
 	tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+	accel_tap_service_subscribe(handle_tap);
 }
 
 
 void handle_deinit(void)
 {
 	tick_timer_service_unsubscribe();
+	accel_tap_service_unsubscribe();
 	animation_unschedule_all();
 }
 
