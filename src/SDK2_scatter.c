@@ -320,8 +320,8 @@ void handle_init(void) {
 	
 	#if INVERTED
 	// The inverter layer (probably) has to be the last layer added to the window
-	inverter_layer_init(&inverter_layer, window.layer.frame);
-	layer_add_child(&window.layer, &inverter_layer.layer);
+	inverter_layer = inverter_layer_create(layer_get_frame(window_get_root_layer(window)));
+	layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(inverter_layer));
 	#endif
 
 	//force initial render
@@ -349,6 +349,21 @@ void handle_deinit(void)
 	tick_timer_service_unsubscribe();
 	accel_tap_service_unsubscribe();
 	animation_unschedule_all();
+
+	#if INVERTED
+	inverter_layer_destroy(inverter_layer);
+	#endif
+
+	int digit;
+	int layer;
+	for(digit = 0; digit < TIME_DIGITS; digit++) {
+		for(layer = 0; layer < LAYERS; layer++) {
+			layer_destroy(time_digits[digit].digit_layers[layer]);
+		}
+	}
+
+	layer_destroy(colon_layer);
+	window_destroy(window);
 }
 
 
