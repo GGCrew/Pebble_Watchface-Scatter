@@ -325,8 +325,8 @@ void handle_init(void) {
 	#endif
 
 	//force initial render
-  now = time(NULL);
-  tick_time = localtime(&now);
+	now = time(NULL);
+	tick_time = localtime(&now);
 	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
 	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
 	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
