@@ -4,6 +4,7 @@
 
 
 #define INVERTED false
+#define TAP_SERVICE false
 
 
 #define ANIMATION_DURATION 200
@@ -12,13 +13,6 @@
 #define TIME_DIGITS 4
 
 
-#define MY_UUID { 0x47, 0x47, 0x20, 0x43, 0x72, 0x65, 0x77, 0x26, 0x85, 0xDA, 0x4A, 0x10, 0x05, 0x0E, 0xF0, 0xDD }
-PBL_APP_INFO(MY_UUID,
-             "Scatter", "GG Crew",
-             0, 9, /* App version */
-             RESOURCE_ID_IMAGE_MENU_ICON,
-             APP_INFO_WATCH_FACE);
-
 Window *window;
 
 #if INVERTED
@@ -26,7 +20,7 @@ InverterLayer *inverter_layer;
 #endif
 
 Layer *colon_layer;
-PropertyAnimation colon_animation_in;
+PropertyAnimation *colon_animation_in;
 
 typedef struct {
 	int x;
@@ -202,8 +196,8 @@ typedef struct {
 	int x;
 	int y;
 	Layer *digit_layers[LAYERS];
-	PropertyAnimation animations_out[LAYERS];
-	PropertyAnimation animations_in[LAYERS];
+	PropertyAnimation *animations_out[LAYERS];
+	PropertyAnimation *animations_in[LAYERS];
 } TimeDigit;
 
 TimeDigit time_digits[TIME_DIGITS];
@@ -245,17 +239,18 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
 		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
 		
-		property_animation_init_layer_frame(&time_digit->animations_out[layer], time_digit->digit_layers[layer], NULL, &random_rect);
-		animation_set_curve(&time_digit->animations_out[layer].animation, AnimationCurveEaseOut);
-		animation_set_delay(&time_digit->animations_out[layer].animation, 0 + delay);
-		animation_set_duration(&time_digit->animations_out[layer].animation, ANIMATION_DURATION);
-		animation_schedule(&time_digit->animations_out[layer].animation);	
+//		property_animation_init_layer_frame(&time_digit->animations_out[layer], time_digit->digit_layers[layer], NULL, &random_rect);
+		time_digit->animations_out[layer] = property_animation_create_layer_frame(time_digit->digit_layers[layer], NULL, &random_rect);
+		animation_set_curve(&time_digit->animations_out[layer]->animation, AnimationCurveEaseOut);
+		animation_set_delay(&time_digit->animations_out[layer]->animation, 0 + delay);
+		animation_set_duration(&time_digit->animations_out[layer]->animation, ANIMATION_DURATION);
+		animation_schedule(&time_digit->animations_out[layer]->animation);	
 		
-		property_animation_init_layer_frame(&time_digit->animations_in[layer], time_digit->digit_layers[layer], &random_rect, &home_rect);
-		animation_set_curve(&time_digit->animations_in[layer].animation, AnimationCurveEaseIn);
-		animation_set_delay(&time_digit->animations_in[layer].animation, ANIMATION_DELAY + delay);
-		animation_set_duration(&time_digit->animations_in[layer].animation, ANIMATION_DURATION);
-		animation_schedule(&time_digit->animations_in[layer].animation);	
+		time_digit->animations_in[layer] = property_animation_create_layer_frame(time_digit->digit_layers[layer], &random_rect, &home_rect);
+		animation_set_curve(&time_digit->animations_in[layer]->animation, AnimationCurveEaseIn);
+		animation_set_delay(&time_digit->animations_in[layer]->animation, ANIMATION_DELAY + delay);
+		animation_set_duration(&time_digit->animations_in[layer]->animation, ANIMATION_DURATION);
+		animation_schedule(&time_digit->animations_in[layer]->animation);	
 	}
 }
 
@@ -273,6 +268,7 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 
+#if TAP_SERVICE
 void handle_tap(AccelAxisType axis) {
 	time_t now;
 	struct tm *tick_time;
@@ -284,6 +280,7 @@ void handle_tap(AccelAxisType axis) {
 	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 100);
 	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 100);
 }
+#endif
 
 
 void handle_init(void) {
@@ -333,21 +330,25 @@ void handle_init(void) {
 	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
 	
 	to_rect = GRect(70, 75, 4, 18);
-	property_animation_init_layer_frame(&colon_animation_in, colon_layer, NULL, &to_rect);
-	animation_set_curve(&colon_animation_in.animation, AnimationCurveEaseOut);
-	animation_set_delay(&colon_animation_in.animation, ANIMATION_DELAY + 500);
-	animation_set_duration(&colon_animation_in.animation, ANIMATION_DURATION);
-	animation_schedule(&colon_animation_in.animation);	
+	colon_animation_in = property_animation_create_layer_frame(colon_layer, NULL, &to_rect);
+	animation_set_curve(&colon_animation_in->animation, AnimationCurveEaseOut);
+	animation_set_delay(&colon_animation_in->animation, ANIMATION_DELAY + 500);
+	animation_set_duration(&colon_animation_in->animation, ANIMATION_DURATION);
+	animation_schedule(&colon_animation_in->animation);	
 	
 	tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+	#if TAP_SERVICE
 	accel_tap_service_subscribe(handle_tap);
+	#endif
 }
 
 
 void handle_deinit(void)
 {
 	tick_timer_service_unsubscribe();
+	#if TAP_SERVICE
 	accel_tap_service_unsubscribe();
+	#endif
 	animation_unschedule_all();
 
 	#if INVERTED

@@ -1,0 +1,22 @@
+{
+	"uuid": "47472043-7265-7726-85DA-4A10050EF0DD",
+  "shortName": "Scatter",
+  "longName": "Scatter",
+  "companyName": "GG Crew",
+  "versionCode": 1,
+  "versionLabel": "0.0.9",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+		"media": [
+			{
+				"type": "png",
+				"file": "images/menu_icon_scatter.png",
+				"name": "IMAGE_MENU_ICON",
+				"menuIcon": true
+			}
+		]
+	}
+}
