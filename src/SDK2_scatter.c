@@ -230,6 +230,11 @@ int random(int max)
 }
 
 
+void animation_stopped(Animation *animation, bool finished, void *property_animation) {
+  if(finished){property_animation_destroy(property_animation);}
+}
+
+
 void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 	GRect random_rect;
 	GRect home_rect;
@@ -244,12 +249,24 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 		animation_set_curve(&time_digit->animations_out[layer]->animation, AnimationCurveEaseOut);
 		animation_set_delay(&time_digit->animations_out[layer]->animation, 0 + delay);
 		animation_set_duration(&time_digit->animations_out[layer]->animation, ANIMATION_DURATION);
+		animation_set_handlers(	&time_digit->animations_out[layer]->animation, 
+														(AnimationHandlers) {
+															.started = NULL,
+															.stopped = (AnimationStoppedHandler) animation_stopped,
+														},
+														time_digit->animations_out[layer]);
 		animation_schedule(&time_digit->animations_out[layer]->animation);	
 		
 		time_digit->animations_in[layer] = property_animation_create_layer_frame(time_digit->digit_layers[layer], &random_rect, &home_rect);
 		animation_set_curve(&time_digit->animations_in[layer]->animation, AnimationCurveEaseIn);
 		animation_set_delay(&time_digit->animations_in[layer]->animation, ANIMATION_DELAY + delay);
 		animation_set_duration(&time_digit->animations_in[layer]->animation, ANIMATION_DURATION);
+		animation_set_handlers(	&time_digit->animations_in[layer]->animation, 
+														(AnimationHandlers) {
+															.started = NULL,
+															.stopped = (AnimationStoppedHandler) animation_stopped,
+														},
+														time_digit->animations_in[layer]);
 		animation_schedule(&time_digit->animations_in[layer]->animation);	
 	}
 }
@@ -273,6 +290,8 @@ void handle_tap(AccelAxisType axis, int direction) {
 	time_t now;
 	struct tm *tick_time;
 
+	light_enable_interaction();
+	
   now = time(NULL);
   tick_time = localtime(&now);
 	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 100);
