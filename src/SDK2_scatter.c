@@ -4,7 +4,7 @@
 
 
 #define INVERTED false
-#define TAP_SERVICE false
+#define TAP_SERVICE true
 
 
 #define ANIMATION_DURATION 200
@@ -269,7 +269,7 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 
 #if TAP_SERVICE
-void handle_tap(AccelAxisType axis) {
+void handle_tap(AccelAxisType axis, int direction) {
 	time_t now;
 	struct tm *tick_time;
 
