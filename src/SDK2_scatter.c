@@ -1,6 +1,4 @@
-#include "pebble_os.h"
-#include "pebble_app.h"
-#include "pebble_fonts.h"
+#include <pebble.h>
 
 
 #define INVERTED false
@@ -286,7 +284,7 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 
 #if TAP_SERVICE
-void handle_tap(AccelAxisType axis, int direction) {
+void handle_tap(AccelAxisType axis, int32_t direction) {
 	time_t now;
 	struct tm *tick_time;
 
@@ -394,3 +392,4 @@ int main(void) {
   
   handle_deinit();
 }
+
