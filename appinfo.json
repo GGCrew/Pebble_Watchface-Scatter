@@ -3,8 +3,8 @@
   "shortName": "Scatter",
   "longName": "Scatter",
   "companyName": "GG Crew",
-  "versionCode": 2,
-  "versionLabel": "2.0.0",
+  "versionCode": 3,
+  "versionLabel": "2.1.0",
   "watchapp": {
     "watchface": true
   },
