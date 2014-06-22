@@ -1,0 +1,13 @@
+# ignore files/folders from other version control systems
+.svn/
+
+# ignore temp files
+*[~]
+
+# ignore transient build files
+build/
+
+# ignore non-essential configuration files
+.lock-waf_linux2_build
+wscript
+
