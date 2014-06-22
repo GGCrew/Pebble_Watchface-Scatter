@@ -27,7 +27,7 @@ typedef struct {
 	int h;
 } DigitComponent;
 
-DigitComponent digit_components[10][LAYERS] = {
+DigitComponent digit_components[11][LAYERS] = {
 	{	//0
 		{	4,	0,	22,	8},
 		{	4,	30,	22,	8},
@@ -187,6 +187,22 @@ DigitComponent digit_components[10][LAYERS] = {
 		{	4,	15,	26,	8},
 		{	22,	4,	8,	30},
 		{	0,	4,	8,	15}
+	},
+	{	//Hidden
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0},
+		{	0,	0,	0,	0}
 	}
 };
 
@@ -214,8 +230,7 @@ void digit_layer_update_callback(Layer *layer, GContext* ctx) {
 void colon_layer_update_callback(Layer *layer, GContext* ctx) {
 	(void)layer;
 
-	//graphics_fill_rect(GContext *ctx, GRect rect, uint8_t corner_radius, GCornerMask corner_mask);
-  graphics_context_set_fill_color(ctx, GColorWhite);
+	graphics_context_set_fill_color(ctx, GColorWhite);
 	graphics_fill_rect(ctx, GRect(0, 0, 4, 4), 1, GCornersAll);
 	graphics_fill_rect(ctx, GRect(0, 14, 4, 4), 1, GCornersAll);
 }
@@ -229,7 +244,7 @@ int random(int max)
 
 
 void animation_stopped(Animation *animation, bool finished, void *property_animation) {
-  if(finished){property_animation_destroy(property_animation);}
+	if(finished){property_animation_destroy(property_animation);}
 }
 
 
@@ -237,7 +252,7 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 	GRect random_rect;
 	GRect home_rect;
 	int layer;
-		
+
 	for(layer = 0; layer < LAYERS; layer++) {
 		random_rect = GRect(random(142), random(166), 2, 2); 	// 144 - 2, 168 - 2
 		home_rect = GRect(time_digit->x + digit_components[digit][layer].x, time_digit->y + digit_components[digit][layer].y, digit_components[digit][layer].w, digit_components[digit][layer].h);
@@ -270,14 +285,46 @@ void trigger_animation(TimeDigit *time_digit, int digit, int delay) {
 
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-	if (units_changed & HOUR_UNIT) {
-		if(tick_time->tm_hour % 10 == 0) { trigger_animation(&time_digits[0], (tick_time->tm_hour) / 10, 0); }
-		trigger_animation(&time_digits[1], (tick_time->tm_hour) % 10, 0);
+	int tm_hour;
+	int tm_min;
+	int hour_tens_digit;
+	int hour_ones_digit;
+	int minute_tens_digit;
+	int minute_ones_digit;
+
+	/**/
+
+	// Set local time variables and optionally adjust for 12h style
+	tm_hour = tick_time->tm_hour;
+	tm_min = tick_time->tm_min;
+
+	if(!clock_is_24h_style()) {
+		tm_hour = tm_hour % 12;
+		if(tm_hour == 0) { tm_hour = 12; }
 	}
 
-	if (units_changed & MINUTE_UNIT) {
-		if(tick_time->tm_min % 10 == 0) { trigger_animation(&time_digits[2], (tick_time->tm_min) / 10, 0); }
-		trigger_animation(&time_digits[3], (tick_time->tm_min) % 10, 0);
+	/**/
+
+	// Compute digit values
+	hour_tens_digit = (tm_hour) / 10;
+	hour_ones_digit = (tm_hour) % 10;
+	minute_tens_digit = (tm_min) / 10;
+	minute_ones_digit = (tm_min) % 10;
+
+	if(!clock_is_24h_style() && (hour_tens_digit == 0)) {
+		hour_tens_digit = 10; // Hide the digit
+	}
+
+	/**/
+
+	if ((units_changed & HOUR_UNIT) || (units_changed & DAY_UNIT)) {
+		if((hour_ones_digit == 0) || (units_changed & DAY_UNIT)) { trigger_animation(&time_digits[0], hour_tens_digit, 0); }
+		trigger_animation(&time_digits[1], hour_ones_digit, 0);
+	}
+
+	if ((units_changed & MINUTE_UNIT) || (units_changed & DAY_UNIT)) {
+		if((minute_ones_digit == 0) || (units_changed & DAY_UNIT)) { trigger_animation(&time_digits[2], minute_tens_digit, 0); }
+		trigger_animation(&time_digits[3], minute_ones_digit, 0);
 	}
 }
 
@@ -289,12 +336,9 @@ void handle_tap(AccelAxisType axis, int32_t direction) {
 
 	light_enable_interaction();
 
-  now = time(NULL);
-  tick_time = localtime(&now);
-	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 100);
-	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 100);
-	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 100);
-	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 100);
+	now = time(NULL);
+	tick_time = localtime(&now);
+	handle_tick(tick_time, DAY_UNIT);  // Passing DAY_UNIT forces complete redraw
 }
 #endif
 
@@ -310,9 +354,9 @@ void handle_init(void) {
 
 	/**/
 
-  window = window_create();
-  window_stack_push(window, true /* Animated */);
-  window_set_background_color(window, GColorBlack);
+	window = window_create();
+	window_stack_push(window, true /* Animated */);
+	window_set_background_color(window, GColorBlack);
 
 	time_digits[0].x = 3; time_digits[0].y = 65;
 	time_digits[1].x = 38; time_digits[1].y = 65;
@@ -340,10 +384,7 @@ void handle_init(void) {
 	//force initial render
 	now = time(NULL);
 	tick_time = localtime(&now);
-	trigger_animation(&time_digits[0], (tick_time->tm_hour / 10), 500);
-	trigger_animation(&time_digits[1], (tick_time->tm_hour % 10), 500);
-	trigger_animation(&time_digits[2], (tick_time->tm_min / 10), 500);
-	trigger_animation(&time_digits[3], (tick_time->tm_min % 10), 500);
+	handle_tick(tick_time, DAY_UNIT);  // Passing DAY_UNIT forces complete redraw
 
 	to_rect = GRect(70, 75, 4, 18);
 	colon_animation_in = property_animation_create_layer_frame(colon_layer, NULL, &to_rect);
@@ -385,10 +426,9 @@ void handle_deinit(void)
 
 
 int main(void) {
-  handle_init();
+	handle_init();
 
-  app_event_loop();
+	app_event_loop();
   
-  handle_deinit();
+	handle_deinit();
 }
-
