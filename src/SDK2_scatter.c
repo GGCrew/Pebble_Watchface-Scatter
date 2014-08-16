@@ -318,7 +318,13 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	/**/
 
 	if ((units_changed & HOUR_UNIT) || (units_changed & DAY_UNIT)) {
-		if((hour_ones_digit == 0) || (units_changed & DAY_UNIT)) { trigger_animation(&time_digits[0], hour_tens_digit, 0); }
+		if(
+			(hour_tens_digit == 0 && hour_ones_digit == 0) ||	// 00:00 transition
+			(hour_tens_digit == 1 && hour_ones_digit == 0) ||	// 10:00 transition
+			(hour_tens_digit == 2 && hour_ones_digit == 0) ||	// 20:00 transition
+			(hour_tens_digit == 0 && hour_ones_digit == 1 && !clock_is_24h_style()) ||	// 12:59-to-1:00 transition 
+			(units_changed & DAY_UNIT)
+		) { trigger_animation(&time_digits[0], hour_tens_digit, 0); }
 		trigger_animation(&time_digits[1], hour_ones_digit, 0);
 	}
 
